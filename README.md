@@ -50,8 +50,8 @@ A terminal-based task manager built with Python's `curses` and `sqlite3` — no 
 Clone or copy the project, then run directly — no install step needed:
 
 ```bash
-git clone https://github.com/your-org/zuqontech-todo.git
-cd zuqontech-todo
+git clone https://github.com/gideonzozingao/terminal-todo-list.git
+cd terminal-todo-list
 python3 todo.py
 ```
 
