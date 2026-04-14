@@ -53,11 +53,14 @@ def get_db() -> sqlite3.Connection:
 
 def init_db() -> None:
     with get_db() as conn:
+        # Create tables if they don't exist yet (fresh install).
+        # NOTE: subtasks is defined here without 'description' intentionally —
+        # the TUI's database.py may also omit it.  The migration block below
+        # adds any missing columns to both tables regardless of who created them.
         conn.executescript("""
         CREATE TABLE IF NOT EXISTS tasks (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             title       TEXT    NOT NULL,
-            description TEXT    DEFAULT '',
             status      TEXT    DEFAULT 'todo',
             start_date  TEXT    DEFAULT '',
             due_date    TEXT    DEFAULT '',
@@ -67,13 +70,38 @@ def init_db() -> None:
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
             task_id     INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
             title       TEXT    NOT NULL,
-            description TEXT    DEFAULT '',
             status      TEXT    DEFAULT 'todo',
             start_date  TEXT    DEFAULT '',
             due_date    TEXT    DEFAULT '',
             created_at  TEXT    DEFAULT (datetime('now'))
         );
         """)
+
+        # ── Migrations ────────────────────────────────────────────────────────
+        # Safely add any columns the TUI schema may not have included.
+        # PRAGMA table_info() lets us check before ALTER so we never crash
+        # on a column that already exists.
+        _migrate(conn, "tasks", [
+            ("description", "TEXT DEFAULT ''"),
+            ("start_date",  "TEXT DEFAULT ''"),
+            ("due_date",    "TEXT DEFAULT ''"),
+            ("created_at",  "TEXT DEFAULT (datetime('now'))"),
+        ])
+        _migrate(conn, "subtasks", [
+            ("description", "TEXT DEFAULT ''"),
+            ("start_date",  "TEXT DEFAULT ''"),
+            ("due_date",    "TEXT DEFAULT ''"),
+            ("created_at",  "TEXT DEFAULT (datetime('now'))"),
+        ])
+
+
+def _migrate(conn: sqlite3.Connection, table: str, columns: list[tuple]) -> None:
+    """Add *columns* to *table* if they are not already present."""
+    existing = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+    for col, ddl in columns:
+        if col not in existing:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {col} {ddl}")
+            print(f"[migration] {table}: added column '{col}'")
 
 
 def row_to_dict(row) -> dict:

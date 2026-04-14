@@ -494,14 +494,3 @@ todo_app/
 
 ---
 
-### v1.0.0 — Initial TUI Release
-
-- Terminal UI built with Python `curses` and `sqlite3`
-- Split-pane layout: scrollable task list (left) + task detail with subtasks (right)
-- Four task statuses: `todo`, `in-progress`, `on-hold`, `done`
-- Due-date urgency system: overdue, due today, due soon (≤ 3 days)
-- Color-coded status and urgency indicators across all panes
-- Progress bar for subtask completion in the detail pane
-- Modal dialogs: multi-field input, status picker, yes/no confirm
-- Persistent SQLite storage at `~/.todo_tasks.db`
-- Zero external dependencies
