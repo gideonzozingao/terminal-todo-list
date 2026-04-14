@@ -1,0 +1,97 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# =========================
+# Environment Variables
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# Logs & Temp Files
+# =========================
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*.swn
+.cache/
+.history/
+
+# =========================
+# IDEs & Editors
+# =========================
+.vscode/
+.idea/
+*.iml
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Node (if using frontend tools)
+# =========================
+node_modules/
+dist/
+coverage/
+
+# =========================
+# Archives
+# =========================
+*.zip
+*.tar.gz
+*.7z
+
+# =========================
+# Binaries
+# =========================
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+*.iso
+*.img
+
+# =========================
+# Media Files (optional)
+# =========================
+*.mp4
+*.avi
+*.mkv
+*.mp3
+*.wav
+*.flac
+
+# =========================
+# Documents (optional)
+# =========================
+*.csv
+*.xlsx
+*.pdf
+*.docx
+*.pptx
