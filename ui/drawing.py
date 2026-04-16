@@ -3,6 +3,14 @@ ui/drawing.py — Low-level curses drawing primitives.
 
 All functions here are pure "output" helpers with no business logic.
 They accept a curses window and paint pixels / strings onto it.
+
+Changes from v1
+---------------
+``draw_header`` now accepts an optional ``extra`` keyword argument.
+The caller (``app.py``) passes the web-server status string, e.g.
+``" WEB:8080"``, which is appended to the app name on the left side of
+the header bar.  When ``extra`` is empty the header is identical to
+before.
 """
 
 import curses
@@ -62,13 +70,22 @@ def draw_border(win, active: bool, title: str = "") -> None:
         sw(win, 0, x, t, curses.color_pair(CP_TITLE) | curses.A_BOLD)
 
 
-def draw_header(stdscr) -> None:
-    """Draw the full-width blue header bar at row 0."""
+def draw_header(stdscr, extra: str = "") -> None:
+    """
+    Draw the full-width blue header bar at row 0.
+
+    Parameters
+    ----------
+    extra : optional status string appended to the app name, e.g.
+            ``" WEB:8080"`` when the background web server is running.
+            Pass an empty string (the default) for the original behaviour.
+    """
     H, W = stdscr.getmaxyx()
     attr = curses.color_pair(CP_HEADER) | curses.A_BOLD
     fill_row(stdscr, 0, attr)
     today = date.today().strftime("%a %d %b %Y")
-    sw(stdscr, 0, 2, "  ZUQONTECH TODO", attr)
+    left_txt = f"  ZUQONTECH TODO{extra}"
+    sw(stdscr, 0, 2, left_txt, attr)
     sw(stdscr, 0, W - len(today) - 4, today, attr)
 
 

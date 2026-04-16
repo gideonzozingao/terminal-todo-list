@@ -10,7 +10,6 @@ import sys
 from pathlib import Path
 
 # ── Database ──────────────────────────────────────────────────────────────────
-
 # Shared with the TUI — both processes read/write the same file.
 DB_PATH: str = os.path.expanduser("~/.todo_tasks.db")
 

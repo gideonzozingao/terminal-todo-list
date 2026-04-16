@@ -5,6 +5,12 @@ app.py — Main application event loop.
 database, dialogs, and pane renderers.  Business logic that belongs
 to the UI (focus state, scroll offsets, keybindings) lives here;
 everything else is delegated to a dedicated module.
+
+Web server integration
+----------------------
+Pressing ``W`` in the left pane toggles the background web server on/off.
+The current status (port or "off") is shown in the header bar and in a
+brief notification overlay after each toggle.
 """
 
 import curses
@@ -24,6 +30,7 @@ from .database import (
     delete_subtask,
 )
 from .utils import parse_date
+from . import web_bridge
 from ui.drawing import draw_header, draw_helpbar
 from ui.dialogs import input_dialog, pick_status, confirm
 from ui.panes import draw_left_pane, draw_right_pane
@@ -34,10 +41,11 @@ FOCUS_RIGHT = "right"
 # ── Help-bar key maps ─────────────────────────────────────────────────────────
 
 _LEFT_HELP = [
-    ("a", "Add task"),
+    ("a", "Add"),
     ("e", "Edit"),
     ("s", "Status"),
     ("d", "Delete"),
+    ("W", "Web"),
     ("Enter/→", "Details"),
     ("q", "Quit"),
 ]
@@ -51,6 +59,32 @@ _RIGHT_HELP = [
     ("s", "Task status"),
     ("Esc/←", "Back"),
 ]
+
+# ── Notification overlay ──────────────────────────────────────────────────────
+
+
+def _show_notify(stdscr, msg: str) -> None:
+    """
+    Flash a one-line notification centered on the screen for one keypress.
+
+    The overlay is drawn over whatever is currently on screen; the TUI
+    redraws itself cleanly on the next iteration of the main loop.
+    """
+    H, W = stdscr.getmaxyx()
+    dw = min(len(msg) + 6, W - 4)
+    dy = H // 2
+    dx = (W - dw) // 2
+    try:
+        win = curses.newwin(3, dw, dy, dx)
+        win.border()
+        attr = curses.color_pair(12) | curses.A_BOLD  # CP_HELP = 12
+        text = msg[: dw - 4]
+        win.addstr(1, 2, text, attr)
+        win.refresh()
+        stdscr.getch()  # any key dismisses
+    except curses.error:
+        pass
+
 
 # ── Task input fields helper ──────────────────────────────────────────────────
 
@@ -96,6 +130,20 @@ def _save_task(stdscr, dialog_title: str, task=None) -> bool:
     else:
         update_task(task["id"], title.strip(), desc.strip(), sd_str, dd_str)
     return True
+
+
+# ── Web status indicator ──────────────────────────────────────────────────────
+
+
+def _web_status_label() -> str:
+    """
+    Return a short string for the header showing web server state.
+
+    Examples: ``" WEB:8080"``  or  ``""`` when stopped.
+    """
+    if web_bridge.is_running():
+        return f" WEB:{web_bridge.current_port()}"
+    return ""
 
 
 # ── Main loop ─────────────────────────────────────────────────────────────────
@@ -150,7 +198,7 @@ def app_loop(stdscr) -> None:
             task_off = task_sel - inner_h + 2
 
         # ── Draw chrome ───────────────────────────────────────────────────────
-        draw_header(stdscr)
+        draw_header(stdscr, extra=_web_status_label())
         draw_helpbar(stdscr, _LEFT_HELP if focus == FOCUS_LEFT else _RIGHT_HELP)
 
         # Vertical divider
@@ -190,6 +238,11 @@ def app_loop(stdscr) -> None:
 
         elif ch in (curses.KEY_LEFT, 27) and focus == FOCUS_RIGHT:
             focus = FOCUS_LEFT
+
+        # ── Web server toggle (W) — available from either pane ────────────────
+        elif ch == ord("W"):
+            msg = web_bridge.toggle()
+            _show_notify(stdscr, f"  {msg}  ")
 
         # ── Left-pane keys ────────────────────────────────────────────────────
         elif focus == FOCUS_LEFT:
