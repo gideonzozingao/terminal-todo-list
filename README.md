@@ -491,6 +491,5 @@ todo_app/
 - No new dependencies introduced. The web server uses only Python stdlib (`http.server`, `sqlite3`, `json`, `re`, `urllib.parse`).
 - The web server binds to `0.0.0.0` so it is reachable from other devices on the local network by IP address (e.g. `http://192.168.x.x:8080`). Restrict to `127.0.0.1` in `web_server.py` if local-only access is preferred.
 - Date input fields in the web UI use the browser's native `<input type="date">` picker and store dates as `YYYY-MM-DD`, matching the TUI's primary format.
-
 ---
 
